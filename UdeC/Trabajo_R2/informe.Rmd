@@ -1,0 +1,279 @@
+---
+title: "Índices mundiales de Salud: Tasas de suicidio y consumo de alcohol en la población."
+author: "Rocío Pérez Aguayo"
+output: 
+  html_document:
+    css: mintybootstrap.css
+    toc: TRUE
+    toc_float: TRUE
+    
+---
+<style>
+body {text-align: justify}
+body{font-size: 12pt;}
+</style>
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
+library(tidyverse)
+library(readr)
+library(na.tools)
+library(dplyr)
+library(ggplot2)
+library(ggtext)
+library(rmdformats)
+```
+# Introducción
+
+
+
+El presente trabajo busca explorar valores estadísticos de la población a nivel mundial en torno a la tasa de suicidio y consumo de alcohol, poniendo la lupa sobre los países con mayor o menor valor en estas tasas y prestando atención a las diferencias con filtro de género. Del mismo modo, se exploran posibles relaciones entre las variables.
+
+# Datos utilizados
+
+El siguiente informe se basó en una base de datos de un estudio descriptivo con indicadores de salud a nivel mundial, que posee mediciones desde el 2000 al 2018. La base de datos se encuentra contenida en el repositorio Kaggle, [disponible aquí.](https://www.kaggle.com/utkarshxy/who-worldhealth-statistics-2020-complete). Por otro lado, la base de datos procesada la puedes descargar desde mi Github [aquí](https://raw.githubusercontent.com/kala-hariz/bases_datos/main/world_health.csv)
+
+```{r}
+world_health <- read_csv("world_health.csv")
+world_health <- world_health%>%
+  select(-Tobacco)
+```
+Cada archivo contiene las siguientes columnas de datos en común:
+
+•	_Nombre del país_
+
+•	_Sexo_: Male, Female, Both Sexes.
+
+•	_Año_: Desde el 2000 al 2016/2018.
+
+Los indicadores utilizados para realizar el análisis son los siguientes:
+
+•	_Tasas brutas de suicidio por 100 000 habitantes._
+
+•	_Consumo total (registrado y no registrado) de alcohol per cápita de personas sobre 15 años._
+
+Dado que la base de datos consistía en múltiples archivos excel con los resultados de las variables separadas entre sí, se procedió a cargarlos al programa para luego realizarles una limpieza, buscando homogeneizar los nombres de variables, dandoles nombres más descriptivos, y excluyendo variables innecesarias para el análisis.
+
+# Preguntas de interés para la exploración de datos
+
+Las preguntas que conforman el desarrollo de este informe son las siguientes:
+
+1)	Mediciones estadísticas: media de consumo de alcohol y tasa de suicidio de hombres y mujeres en el mundo.
+2)	¿Cuáles son los países con mayor y menor tasa de suicidio en 2015? ¿Cuáles son los países con mayor y menor tasa de suicidio femenino en 2015?
+4)	¿Cuáles son los países con mayor y menor índice de consumo de alcohol en 2015?
+5)	¿Existe una relación entre el consumo de alcohol y la tasa de suicidio a nivel mundial?
+
+# Resultados 
+
+### Media de consumo de alcohol
+
+A nivel mundial, el mínimo de consumo de alcohol por país registado es `r min(world_health$Alcohol)` y el máximo es `r max(world_health$Alcohol)`.
+
+La media de consumo de alcohol, agrupada por género, son las siguientes:
+
+```{r, message = FALSE}
+world_health%>%
+  group_by(Sexes) %>%
+  summarise(media_consumo_alcohol = mean(Alcohol))
+```
+<br>
+A partir de esta tabla, observamos que si bien la media de consumo de alcohol es de 6.1, existe una diferencia importante entre el consumo de hombres y mujeres, en el que los hombres consumen en promedio 3.6 veces más que las mujeres.
+
+### Media de tasas de suicidio
+
+A nivel mundial, el mínimo de tasa de suicidio por país registrado es `r min(world_health$Suicide, na.rm = TRUE)` y el máximo es `r max(world_health$Suicide, na.rm = TRUE)`.
+
+La media de tasas de suicidio, separado por sexo, son las siguientes:
+
+
+```{r, message = FALSE}
+world_health%>%
+  group_by(Sexes) %>%
+  summarise(media_tasa_suicidios = mean(Suicide, na.rm = TRUE))
+```
+<br>
+Nuevamente, es posible ver que si bien la media de tasa de suicidio es de 10 por cada 10.000 habitantes, la incidencia de casos es 3 veces más para hombres que para mujeres.
+
+## Países con mayores y menores índices de consumo de alcohol para el 2015
+
+A partir de la información mostrada, veamos cuáles son los países con mayor índice de consumo de alcohol, sin filtro por sexo:
+
+```{r}
+world_health %>% 
+  filter(Period == 2015) %>% 
+  slice_max(Alcohol, n = 10)
+```
+<br>
+Es importante notar que cuando no filtramos por sexo la totalidad de los países con mayor índice de consumo de alcohol son coronados por el consumo de alcohol de los hombres, algo que nos había sugerido los datos cuando observamos la media filtrada por género.  Cuando observamos la tasa de suicidio correspondiente notamos que en su mayoría supera la media mundial, en algunos casos con creces. Observemos el caso para ambos sexos:
+
+```{r}
+world_health %>% 
+  filter(Period == 2015, Sexes == "Both sexes") %>% 
+  slice_max(Alcohol, n = 10)
+```
+<br>
+
+En la tabla impresa la mayoría de los países se mantienen, bajándose Burkina Faso y sumándose Irlanda, por lo que podemos ver que la media de alcohol de los hombres carga muchísimo los resultados. Notamos también que las tasas de suicidio, a excepción de Seychelles y Uganda, supera la media mundial, aunque estos numero disminuyen, probablemente por la influencia de la tasa de suicidio femenina.
+
+Para el caso de los países con menor tasa de consumo de alcohol, tenemos lo siguiente:
+
+```{r}
+world_health %>% 
+  filter(Period == 2015, Sexes == "Both sexes") %>% 
+  slice_min(Alcohol, n = 10)
+```
+<br>
+
+Los datos nos muestran, en general, países del Medio Oriente cuya tasa de suicidio también es, a excepción de Yemen, significativamente menor a la media mundial.
+
+Por último, exploremos el consumo de alcohol en mujeres:
+
+
+```{r}
+world_health %>% 
+  filter(Period == 2015, Sexes == "Female") %>% 
+  slice_max(Alcohol, n = 10)
+```
+<br>
+Podemos observar que la tasa de mayor consumo de alcohol en mujeres corresponden a países de Europa, cuyos valores de tasa de suicidio son también, en general, mayores a la media mundial.
+
+## Países con mayores y menores tasas de suicidio para el 2015
+
+A partir de la información mostrada, veamos cuáles son los países con mayor tasa de suicidio, sin filtro de sexo:
+
+
+```{r}
+world_health %>% 
+  filter(Period == 2015) %>% 
+  slice_max(Suicide, n = 10)
+```
+<br>
+Nuevamente, observamos que las mayores tasas de suicidio son masculinas, solamente siendo Lithuania el país con tasas de suicidio máxima a nivel general. Además, podemos observar que, con excepción de Kazakhstan y Suriname, los valores máximos de suicidio se acompañan también de valores que superan la media de consumo de alcohol.
+
+
+```{r}
+world_health %>% 
+  filter(Period == 2015, Sexes == "Both sexes") %>% 
+  slice_max(Suicide, n = 10)
+```
+<br>
+
+Cuando se filtra por sexo se mantiene la mayoría de los países, perteneciendo a países europeos, asiáticos y del medio oriente. La tasa de consumo de alcohol en general se mantiene por sobre la media mundial, pero esta es más discreta.
+
+Para el caso de las menores tasas de suicidio, obtenemos lo siguiente:
+
+
+```{r}
+world_health %>% 
+  filter(Period == 2015, Sexes == "Both sexes") %>% 
+  slice_min(Suicide, n = 10)
+```
+<br>
+
+En esta tabla destaca el país Antigua y Barbuda, con una tasa de suicidio cero para el caso de los hombres, obteniendo la menor tasa de suicidio a nivel mundial. Lo que podemos notar es que la diversidad de consumo de alcohol es alta, desde muy poco consumo, pasando por la media mundial y superandola.
+
+
+```{r}
+max_sui <- world_health %>% 
+  filter(Period == 2015, Sexes == "Both sexes") %>% 
+  slice_max(Suicide, n = 5)
+
+min_sui <- world_health %>% 
+  filter(Period == 2015, Sexes == "Both sexes") %>% 
+  slice_min(Suicide, n = 5)
+
+suicides_15 <- full_join(max_sui, min_sui)
+
+suicides_15%>%
+  ggplot(aes(reorder(Location, Suicide), Suicide)) +
+  geom_col(fill = "sienna1") +
+  theme_minimal() +
+  coord_flip() +
+  labs(title="Países con mayores y menores tasas de suicidio", 
+       subtitle="a nivel Mundial, período 2015",
+       x= NULL,
+       y="tasa cruda de suicidio 1:100.000",
+       caption="Fuente de los datos: World Health Statistics 2020, www.kaggle.com")
+```
+<br>
+
+El gráfico impreso nos muestra los países con mayor y menor tasa de suicidio en el mundo, filtrado por sexo.
+
+Observemos ahora los países con mayor tasa de suicidio femenino:
+
+```{r}
+world_health %>% 
+  filter(Period == 2015, Sexes == "Female") %>% 
+  slice_max(Suicide, n = 10)
+```
+<br>
+Los países con mayor tasa de suicidio femenino se reparten entre países europeos y países asiaticos, en el que el consumo de alcohol varía de manera importante, con tasas tanto bajo como por sobre la media.
+
+Para el caso de los países con menor tasa de suicidio femenino:
+
+```{r}
+world_health %>% 
+  filter(Period == 2015, Sexes == "Female") %>% 
+  slice_min(Suicide, n = 10)
+```
+<br>
+
+Los países con menor tasa de suicidio femenino se distribuyen en el Medio Oriente, Oceania y Europa, con una correspondiente tasa de consumo de alcohol ligeramente bajo la media, a excepción de los países del Medio Oriente, en que disminuye importantemente.
+
+```{r}
+max_sui_f <- world_health %>% 
+  filter(Period == 2015, Sexes == "Female") %>% 
+  slice_max(Suicide, n = 5)
+
+min_sui_f <- world_health %>% 
+  filter(Period == 2015, Sexes == "Female") %>% 
+  slice_min(Suicide, n = 5)
+
+suicides_f_15 <- full_join(max_sui_f, min_sui_f)
+
+suicides_f_15%>%
+  ggplot(aes(reorder(Location, Suicide), Suicide)) +
+  geom_col(fill = "turquoise") +
+  theme_minimal() +
+  coord_flip() +
+  labs(title="Países con mayores y menores tasas de suicidio femenino", 
+       subtitle="a nivel Mundial, período 2015",
+       x= NULL,
+       y="tasa cruda de suicidio 1:100.000",
+       caption="Fuente de los datos: World Health Statistics 2020, www.kaggle.com")
+```
+<br>
+El gráfico impreso nos muestra los países con mayor y menor tasa de suicidio femenino en el mundo.
+
+## Relaciones entre variables
+
+### ¿Existe relación entre el uso de alcohol y el índice de suicidio a nivel mundial?
+
+El siguiente gráfico busca explorar las posibles relaciones de regresión que existe entre el consumo de alcohol y la tasa de suicidio por país.
+
+```{r, echo=FALSE}
+
+world_health%>%
+  ggplot(mapping = aes(Alcohol, Suicide)) +
+  geom_point(na.rm = TRUE) +
+  geom_smooth (na.rm = TRUE, fill = "hotpink", color = "hotpink") +
+  theme_minimal()+
+  labs(title="Relación entre consumo de alcohol y tasas de suicidio", 
+       subtitle="a nivel Mundial, período 2000 - 2018",
+       x="consumo de alcohol habitantes + 15 años",
+       y="tasa cruda suicidio 1:100.000",
+       caption="Fuente de los datos: World Health Statistics 2020, www.kaggle.com")
+
+```
+<br>
+
+Podemos observar que existe una leve pendiente, sin embargo esta distribución es difusa y el error aumenta aún más a medida que se avanza en la tasa de suicidio y consumo de alcohol.
+
+
+# Conclusiones
+
+A través del informe pudimos observar las diferencias de consumo de alcohol y tasas de suicidio en el mundo. En general, podemos comentar que tanto la tasa de consumo de alcohol como la de suicidio tienen especificidad de género. 
+
+La información explorada sugiere una correlación, con la presencia de una leve pendiente positiva. Sin embargo, esta correlación se vuelve más difusa a medida que los numeros de las tasas aumentan.
+
+Se sugiere la posibilidad de explorar los datos de acuerdo a filtros de género o continente, para ver si existen relaciones más limpias.
