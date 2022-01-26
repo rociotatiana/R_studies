@@ -1,0 +1,63 @@
+---
+title: "Clase 1"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+Voy a escribir un par de palabras
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+# Titulo mas grande
+
+## un titulo mas pequeño
+
+### mas peque
+
+#### aún mas chico
+
+
+## otras cosas de formato a tener en cuenta
+
+todo lo que yo escriba directamente es texto plano. Si yo quisiera escribir en cursivas, tendría que rodear lo escrito en asteriscos: *nota importante*.
+
+Si yo quisiera que algo estuviese en negritas, tendría que poner 2 asteriscos: **otra cosa muy importante**
+
+¿cómo podria agregar un enlace?
+Si uno quiere aprender mas sobre RMarkdown, se puede revisar el libro [R para Ciencia de Datos](https://es.r4ds.hadley.nz/r-markdown.html)
+
+
+¿Cómo insertar un bloque de codigo?
+Una forma es hacer click en la ventana C verde, arriba a la derecha
+```{r}
+summary(iris)
+
+```
+
+Otra opción es con el comando abreviado Ctrl + Alt + i
+
+```{r}
+25 + 86
+```
+
