@@ -1,0 +1,72 @@
+---
+output: 
+  html_document:
+    theme: flatly
+    toc: TRUE
+    toc_float: TRUE
+params:
+  nombre: "Violeta"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# los paquetes que vamos a utilizar
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+```
+
+```{r}
+femicidios %>% 
+  ggplot(aes(`Antecedentes ley VIF`)) +
+    geom_bar(fill = "hotpink3") +
+  coord_flip() +
+  scale_y_continuous(limits = c(0, 100)) +
+  theme_minimal() +
+  labs(title = "Relación: Femicidios y <b style='color:hotpink3'>antecedentes previos de VIF",
+       subtitle = "2020 - 2021",
+       y = "Casos femicidio",
+       x = NULL,
+       caption = "Fuente: Red Chilena contra la violencia hacia las mujeres")+
+  theme(plot.title = element_markdown())
+```
+
+
+```{r, include=FALSE}
+registro_nombres <- read.csv("https://raw.githubusercontent.com/rivaquiroga/curso-r-udec-2021/main/datos/nombres_1970.csv")
+
+```
+# Uso del nombre "`r params`" en Chile entre `r min(registro_nombres$anio)` y `r max(registro_nombres$anio)`
+
+En este informe vamos a explorar cómo ha cambiado la frecuencia de uso del nombre "`r params`" en Chile entre `r min(registro_nombres$anio)` y `r max(registro_nombres$anio)`. Los datos se obtuvieron a través de Ley de Transparencia desde el Servicio de Registro Civil e Identificación. Los datos incluyen todos los nombres con al menos 15 ocurrencias por año.
+
+## Frecuencia del nombre "`r params`" entre `r min(registro_nombres$anio)` y `r max(registro_nombres$anio)`
+
+  Durante este período, se inscribieron un total de `r registro_nombres%>% filter(nombre == params)%>% summarise(sum(n)) ` personas con el nombre `r params`. El siguiente grafico de barras muestra la frecuencia de uso de este nombre durante estos años.
+
+```{r , echo=FALSE}
+registro_nombres %>%
+  filter(nombre == params )%>%
+  ggplot(aes(x = anio, y = n)) +
+  geom_col(fill = "#BF4055") +
+  labs (y = NULL,
+        x = "Año") +
+  theme_minimal()
+```
+
+## Los datos desde el 2010
+
+
+La siguiente tabla muestra las frecuencias de este nombre desde el año 2010.
+
+```{r , echo = FALSE}
+registro_nombres %>%
+  filter(anio >= 2010, nombre == params) %>%
+  select(anio, n)%>%
+  kable() %>%
+  kable_styling(full_width = FALSE)
+```

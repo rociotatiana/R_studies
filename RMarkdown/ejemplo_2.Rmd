@@ -1,0 +1,56 @@
+---
+output: 
+  html_document:
+    theme: flatly
+    toc: TRUE
+    toc_float: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# los paquetes que vamos a utilizar
+
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(knitr)
+library(kableExtra)
+```
+
+
+```{r, include=FALSE}
+registro_nombres <- read.csv("https://raw.githubusercontent.com/rivaquiroga/curso-r-udec-2021/main/datos/nombres_1980.csv")
+
+```
+# Uso del nombre "Matilde" en Chile entre 1980 y 2019
+
+En este informe vamos a explorar cómo ha cambiado la frecuencia de uso del nombre "Matilde" en Chile entre 1980 y 2019. Los datos se obtuvieron a través de Ley de Transparencia desde el Serivioc de Registro Civil e Identificación. Los datos incluyen todos los nomvres con al menos 15 ocurrencias por año.
+
+## Frecuencia del nombre "Matilde" entre 1980 y 2019
+
+  Durante este período, se inscribieron un total de `r registro_nombres%>% filter(nombre == "Matilde")%>% summarise(sum(n)) ` personas con el nombre Matilde. El siguiente grafico de barras muestra la frecuencia de uso de este nombre durante estos años.
+
+```{r , echo=FALSE}
+registro_nombres %>%
+  filter(nombre == "Matilde")%>%
+  ggplot(aes(x = anio, y = n)) +
+  geom_col(fill = "#BF4055") +
+  labs (y = NULL,
+        x = "Año") +
+  theme_minimal()
+```
+
+## Los datos desde el 2010
+
+
+La siguiente tabla muestra las frecuencias de este nombre desde el año 2010.
+
+```{r , echo = FALSE}
+registro_nombres %>%
+  filter(anio >= 2010, nombre == "Matilde") %>%
+  select(anio, n)%>%
+  kable() %>%
+  kable_styling(full_width = FALSE)
+```
+

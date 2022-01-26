@@ -1,0 +1,262 @@
+---
+title: 'Clase 2: visualizacion datos'
+author: "Kala Hari"
+date: "18-06-2021"
+output: 
+  html_document:
+    toc: TRUE
+    toc_float: TRUE
+    theme: flatly
+    
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+```
+
+## Preparación
+
+Durante esta sesión utlizaremos los siguientes paquetes:
+
+```{r message = FALSE }
+library(gghighlight)
+library(countrycode)
+library(gapminder)
+library(ggplot2)
+library(dplyr)
+```
+
+## Preprocesamiento de los datos 
+
+Para los ejemplos de esta sesión, vamos a utilizar datos que están contenidos dentro del paquete gapminder. Este paquete contiene datos sobre desarrollo a nivel mundial. 
+
+
+Antes de comenzar a visualizar los datos, vamos a hacer dos modifciaciones en nuestra base. Por una parte, vamos a crear una nueva variable llamada "region" y, por otra, vamos a traducir los nombres de los países.
+
+```{r}
+desarrollo <- gapminder %>%
+  mutate(region = countrycode(sourcevar = country, 
+                              origin = "country.name", 
+                              destination = "region23"),
+         .before = continent) %>%
+  mutate(country = countrycode(sourcevar = country, 
+                               origin = "country.name", 
+                               destination = "cldr.name.es"))
+```
+
+
+## Gráfico de dispersión (scatterplot)
+
+En este primer tipo de gráfico vamos a explorar la relación entre esperanza de vida al nacer y PIB per capita. 
+
+### Versión 1: opciones por defecto
+
+En esta primera versión vamos a utilizar las opciones por defecto y editaremos el grado de transparencia para identificar en qué zonas hay más de ellos. El grado de transparencia se ajusta con el argumento `alpha` dentro de la función geom_point. El valor va de 0 a 1 (0 = completamente transparente, 1 = completamente opaco). 
+
+```{r}
+ggplot(desarrollo, aes(x = gdpPercap, y = lifeExp)) + 
+  geom_point(alpha = 0.4)
+```
+
+### Versión 2: editar títulos y subtítulos
+
+Ahora vamos a editar los títulos y subtítulos de nuestro gráfico con la función `labs`. También vamos a eliminar el fondo gris con la función `theme_minimal`
+```{r}
+ggplot(desarrollo, aes(x = gdpPercap, y = lifeExp, color = continent)) + 
+  geom_point(alpha = 0.4) + 
+  labs (title = "Crecimiento económico y esperanza de vida en el mundo (1952 - 2007",
+        subtitle = "Cada punto representa un país/año",
+        caption = "Fuente: elaboración propia a partir de datos de gapminder.org",
+        x = "PIB per cápita", 
+        y = "Esperanza de vida") +
+  theme_minimal()
+```
+Si quisieramos guardar este gráfico como un archivo local en nuestro computaro, podemos utilizar la función `ggsave` indicando dentro el nombre del archivo. Opcionalmente podemos indicar el tamaño que queremos que tenga la imagen.  Ejemplo: 
+
+`ggsave("pib-esperanza-vida.png", width = 10, height = 7)`
+  
+### Versión 3: Ajustar las escalas
+
+En esta última versión, vamos a arreglar las escalas de los ejes x e y. En x vamos a utilizar una escala logarítmica. No son tendencias lineales si no exponenciales. Modificaremos el formato de los valores para que queden sin notación científica y con formato de monto de dinero. En el eje y vamos a ajustar la escala para que parta desde 0 y así la percepción de los datos sea más precisa, usando el argumento limits. También vamos a definir qué valores van a mostrar como referencia usando el argumento `breaks`
+```{r}
+ggplot(desarrollo, aes(x = gdpPercap, y = lifeExp, color = continent)) + 
+  geom_point(alpha = 0.4) + 
+  labs (title = "Crecimiento económico y esperanza de vida en el mundo (1952 - 2007",
+        subtitle = "Cada punto representa un país/año",
+        caption = "Fuente: elaboración propia a partir de datos de gapminder.org",
+        x = "PIB per cápita en dólares", 
+        y = "Esperanza de vida") +
+  theme_minimal() +
+  scale_x_log10(labels = scales::dollar) +
+  scale_y_continuous(limits = c(0, 90), breaks = c(0, 20, 40, 60, 80))
+```
+
+Tanto `limits`como `breaks` se pueden utilizar en cualquier de los dos ejes.
+
+## Gráfico de línea
+
+En este caso vamos a crear un grafico de linea con las variables año y PIB per capita.
+
+### Versión 1: etiquetas
+
+En esta primera versión aplicamos ajustes que habiamos visto anteriormente: etiquetas con la función `labs`y modificamos la escala del eje y el formato de su valores con `scale_y_continuous`
+
+```{r}
+desarrollo %>%
+  filter(region == "South America") %>%
+  ggplot(aes(year, gdpPercap, color = country)) +
+  geom_line() +
+  theme_minimal() + 
+  labs ( x = "año", 
+         y = "PIB per cápita en dólares",
+         color = "País", 
+         title = "Evolución del PIB en Sudamerica",
+         subtitle = "años 1952 a 2007",
+         caption = "Fuente: elaboración propia con datos de gapminder.org") + 
+  scale_y_continuous(limits = c(0, 15000), labels = scales::dollar)
+
+```
+
+
+### Versión 2: anotaciones
+
+En esta versión le vamos a agregar anotaciones al gráfico. Específicamente, vamos a agregar una linea vertical en el año 1997 para indicar que ocurrió la crisis asiatica, de esa forma podemos llamar la atención de nuestra audiencia sobre algún aspecto de nuestra visualización.Para genera la línea vamos a utilizar la función `geom_vline` y para genera la anotación utilizaremos `geomlabel`
+
+```{r}
+desarrollo %>%
+  filter(region == "South America") %>%
+  ggplot(aes(year, gdpPercap, color = country)) +
+  geom_line() +
+  theme_minimal() + 
+  labs ( x = "año", 
+         y = "PIB per cápita en dólares",
+         color = "País", 
+         title = "Evolución del PIB en Sudamerica",
+         subtitle = "años 1952 a 2007",
+         caption = "Fuente: elaboración propia con datos de gapminder.org") + 
+  scale_y_continuous(limits = c(0, 15000), labels = scales::dollar) +
+  geom_vline(xintercept = 1997, color = "gray", linetype = "dashed") +
+  geom_label(aes(1990, y = 14000, label = "Crisis Asiática"), 
+             color = "gray", size = 3)
+
+```
+### Versión 3: destacar una parte del gráfico sobre otra 
+Vamos a utilizar el paquete `gghighlight` para destacar valores en nuestro gráfico.
+
+```{r message = FALSE, warning=FALSE}
+desarrollo %>%
+  filter(region == "South America") %>%
+  ggplot(aes(year, gdpPercap, color = country)) +
+  geom_line() +
+  gghighlight(country == "Chile") +
+  theme_minimal() + 
+  labs ( x = "año", 
+         y = "PIB per cápita en dólares",
+         color = "País", 
+         title = "Evolución del PIB en Chile en 1953 y 2007",
+         subtitle = "Comparación con otros países de Sudamérica",
+         caption = "Fuente: elaboración propia con datos de gapminder.org") + 
+  scale_y_continuous(limits = c(0, 15000), labels = scales::dollar) +
+  geom_vline(xintercept = 1997, color = "gray", linetype = "dashed") +
+  geom_label(aes(1990, y = 14000, label = "Crisis Asiática"), 
+             color = "gray", size = 3)
+```
+
+La forma de especificar los valores que queremos destacar es como con la función filter. Aca teníamos una variable categórica, pero si fuese continua podríamos hacer algo como: `gghighlight(gdpPercap > 10000, lifeExp < 50)`
+
+
+## Gráfico de barra
+
+Vamos a hacer un gráfico similar al anterior (año /PIB), pero con columnas y modificando otras opciones (como etiquetas y colores)
+
+### Versión 1: versión por defecto
+
+Aquí generamos el gráfico aplicando alguna de las cosas vistas en las visualizaciones anteriores, como cambio en las etiquetas y el fondo.
+```{r}
+desarrollo%>%
+  filter(country == "Chile") %>%
+  ggplot(aes(year, gdpPercap)) +
+  geom_col() +
+  labs ( x = "año", 
+         y = "PIB per cápita en dólares",
+         title = "Evolución del PIB en Chile en 1953 y 2007",
+         subtitle = "Comparación con otros países de Sudamérica",
+         caption = "Fuente: elaboración propia con datos de gapminder.org")
+
+```
+
+
+### Versión 2: agregar valores sobre las columnas
+
+Para agregar los valores sobre las columnas vamos a utilizar la función `geom_text`, que nos permite agregar etiquetas a los valores.
+
+```{r}
+desarrollo%>%
+  filter(country == "Chile") %>%
+  ggplot(aes(year, gdpPercap)) +
+  geom_col() +
+  theme_minimal() +
+  labs ( x = "año", 
+         y = "PIB per cápita en dólares",
+         title = "Evolución del PIB en Chile en 1953 y 2007",
+         subtitle = "Comparación con otros países de Sudamérica",
+         caption = "Fuente: elaboración propia con datos de gapminder.org") +
+  scale_y_continuous(limits = c (0, 15000), labels = scales::dollar) +
+  geom_text(aes(label = round(gdpPercap)), vjust = -0.5)
+
+```
+### Versión 2 con un variante: grafico lineas y puntos
+
+Este es el mismo gráfico, pero en vez de barras usamos puntos y líneas. Agregamos 
+```{r}
+desarrollo%>%
+  filter(country == "Chile") %>%
+  ggplot(aes(year, gdpPercap)) +
+  geom_line() +
+  geom_point() +
+  theme_minimal() +
+  labs ( x = "año", 
+         y = "PIB per cápita en dólares",
+         title = "Evolución del PIB en Chile en 1953 y 2007",
+         subtitle = "Comparación con otros países de Sudamérica",
+         caption = "Fuente: elaboración propia con datos de gapminder.org") +
+  scale_y_continuous(limits = c (0, 15000), labels = scales::dollar) +
+  geom_text(aes(label = round(gdpPercap)), vjust = -0.7, hjust = 0.8)
+
+```
+
+### Variante: datos de dos o más países
+
+¿Qué pasa si queremos hacer una columna entre dos o más países?
+
+Por defecto, las columnas nos aparecen apiladas. Como eso dificulta la comparación, sería mejor dejarlas una al lado de la otra. Para eso, utilizaremos el argumento `position` dentro de `geom_col`
+
+```{r}
+desarrollo%>%
+  filter(country %in% c ("Chile", "Haití")) %>%
+  ggplot(aes(year, gdpPercap, fill = country)) +
+  geom_col(position = "dodge") +
+  theme_minimal() +
+  scale_fill_manual(values = c("green", "red")) +
+  labs(x = "Año", 
+       y = "PIB per cápita en dólares", 
+       fill = "País",
+       title = "Evoluciones del PIB per cápita en Chile y Haití")
+```
+
+```{r}
+desarrollo %>% 
+  filter(country=="República Dominicana") %>% 
+  ggplot(aes(year,gdpPercap))+
+  geom_col(fill = "hotpink") +
+  theme_minimal()+
+  labs(x="año",
+       y="PIB Per Capita en Dolares",
+       title = "Evolucion PIB per capita en Republica Dominicana 1952-2007",
+       caption="fuente:elaboracion propia con datos gapminder")+
+  scale_y_continuous(limits = c(0,10000),labels=scales::dollar)+
+  geom_text(aes(label=round(gdpPercap)),vjust=-0.5)
+```
+
