@@ -24,11 +24,12 @@ More on: https://www.rstudio.com/resources/books/
 - Introducción a estadística con R: https://bookdown.org/matiasandina/R-intro/introduccion.
 - R para principiantes: https://cran.r-project.org/doc/contrib/rdebuts_es.pdf
 - R para profesionales de los datos: https://www.datanalytics.com/libro_r/contenido-y-plan-del-libro.html
-
+- R para ciencia de datos: https://es.r4ds.hadley.nz/introducci%C3%B3n.html
+- AnalizaR Datos Políticos: https://arcruz0.github.io/libroadp/
 
 ### Cheat Sheets:
 
-####Fundamentals:
+#### Fundamentals:
 - Rstudio IDE: https://raw.githubusercontent.com/rstudio/cheatsheets/main/rstudio-ide.pdf
 - Graphics with ggplot: https://raw.githubusercontent.com/rstudio/cheatsheets/main/data-visualization.pdf
 - Data Transfromation with dplyr: https://raw.githubusercontent.com/rstudio/cheatsheets/main/data-transformation.pdf
@@ -39,7 +40,7 @@ More on: https://www.rstudio.com/resources/books/
 - Factors with forcats: https://raw.githubusercontent.com/rstudio/cheatsheets/main/factors.pdf
 - Date with lubridate: https://raw.githubusercontent.com/rstudio/cheatsheets/main/lubridate.pdf
 
-####Medium-Advanced:
+#### Medium-Advanced:
 
 - RMarkdown: https://raw.githubusercontent.com/rstudio/cheatsheets/main/rmarkdown.pdf
 - Shiny: https://raw.githubusercontent.com/rstudio/cheatsheets/main/shiny.pdf
